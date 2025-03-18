@@ -73,9 +73,7 @@ Tick ==
 \* Open door
 OpenDoor ==
   /\ door' = OPEN
-  /\ IF ImplementOpenDoorSafety 
-     THEN radiation' = OFF 
-     ELSE UNCHANGED << radiation >>
+  /\ radiation' = OFF
   /\ UNCHANGED << timeRemaining >>
 
 \* Close door
