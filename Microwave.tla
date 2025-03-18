@@ -49,7 +49,8 @@ IncTime ==
 \* Start radiation and time countdown
 Start ==
   /\ radiation = OFF
-  /\ ImplementStartSafety => door = CLOSED
+\* cannot heat if door open
+  /\ door = CLOSED
   /\ timeRemaining > 0
   /\ radiation' = ON
   /\ UNCHANGED << door, timeRemaining >>
