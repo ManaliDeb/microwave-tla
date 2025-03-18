@@ -73,6 +73,7 @@ Tick ==
 \* Open door
 OpenDoor ==
   /\ door' = OPEN
+\* radiation is always turned off when door open
   /\ radiation' = OFF
   /\ UNCHANGED << timeRemaining >>
 
