@@ -128,4 +128,7 @@ DeadlockFree ==
 \* deadlock prevention: at least one action must be possible
 NoDeadlock == <>[] DeadlockFree
 
-
+\* concurrency
+Concurrency ==
+  \A m \in 1..MicrowaveCount :
+    Next_m == Start \/ Tick \/ OpenDoor \/ CloseDoor \/ Cancel
