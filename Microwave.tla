@@ -14,22 +14,27 @@ VARIABLES
   \* See TypeOK below for type constraints
   door,
   radiation,
-  timeRemaining
+  timeRemaining,
+  powerLevel
 
 \* Tuple of all variables
-vars == << door, radiation, timeRemaining >>
+vars == << door, radiation, timeRemaining, powerLevel >>
 
 \* Symbolic names for significant strings
 OFF == "off"
 ON == "on"
 CLOSED == "closed"
 OPEN == "open"
+LOW == "low"
+MEDIUM == "medium"
+HIGH == "high"
 
 \* Dynamic type invariant
 TypeOK == 
   /\ door \in { CLOSED, OPEN }
   /\ radiation \in { OFF, ON }
   /\ timeRemaining \in Nat
+  /\ powerLevel \in { LOW, MEDIUM, HIGH }
 
 MaxTime == 60
 
@@ -38,13 +43,14 @@ Init ==
   /\ door \in { OPEN, CLOSED }
   /\ radiation = OFF
   /\ timeRemaining = 0
+  /\ powerLevel = MEDIUM
 
 \* Increment remaining time by one second
 IncTime ==
   /\ radiation = OFF
   /\ timeRemaining' = timeRemaining + 1
   /\ timeRemaining' <= MaxTime
-  /\ UNCHANGED << door, radiation >>
+  /\ UNCHANGED << door, radiation, powerLevel >>
 
 \* Start radiation and time countdown
 Start ==
@@ -53,13 +59,13 @@ Start ==
   /\ door = CLOSED
   /\ timeRemaining > 0
   /\ radiation' = ON
-  /\ UNCHANGED << door, timeRemaining >>
+  /\ UNCHANGED << door, timeRemaining, powerLevel >>
 
 \* Cancel radiation and reset remaining time
 Cancel ==
   /\ radiation' = OFF
   /\ timeRemaining' = 0
-  /\ UNCHANGED << door >>
+  /\ UNCHANGED << door, powerLevel >>
 
 \* Internal clock tick for time countdown
 Tick ==
@@ -69,19 +75,53 @@ Tick ==
   /\ IF timeRemaining' = 0 
      THEN radiation' = OFF 
      ELSE UNCHANGED << radiation >>
-  /\ UNCHANGED << door >>
+  /\ UNCHANGED << door, powerLevel >>
 
 \* Open door
 OpenDoor ==
   /\ door' = OPEN
 \* radiation is always turned off when door open
   /\ radiation' = OFF
-  /\ UNCHANGED << timeRemaining >>
+  /\ UNCHANGED << timeRemaining, powerLevel >>
 
 \* Close door
 CloseDoor ==
   /\ door' = CLOSED
-  /\ UNCHANGED << radiation, timeRemaining >>
+  /\ UNCHANGED << radiation, timeRemaining, powerLevel >>
+
+\* Adjust power levels
+
+SetPowerLow ==
+  /\ powerLevel' = LOW
+  /\ UNCHANGED << door, radiation, timeRemaining >>
+
+SetPowerMedium ==
+  /\ powerLevel' = MEDIUM
+  /\ UNCHANGED << door, radiation, timeRemaining >>
+
+SetPowerHigh ==
+  /\ powerLevel' = HIGH
+  /\ UNCHANGED << door, radiation, timeRemaining >>
+
+Pause ==
+  /\ radiation = ON
+  /\ radiation' = OFF
+  /\ UNCHANGED << door, timeRemaining, powerLevel >>
+
+Resume ==
+  /\ radiation = OFF
+  /\ door = CLOSED
+  /\ timeRemaining > 0
+  /\ radiation' = ON
+  /\ UNCHANGED << door, timeRemaining, powerLevel >>
+
+Fault_StuckDoor ==
+  /\ door' = door  \* Door remains in its current state
+  /\ UNCHANGED << radiation, timeRemaining, powerLevel >>
+
+Recover_StuckDoor ==
+  /\ door' = CLOSED  \* Forces door to close properly
+  /\ UNCHANGED << radiation, timeRemaining, powerLevel >>
 
 \* All valid actions (state transitions)
 Next ==
@@ -91,6 +131,13 @@ Next ==
   \/ OpenDoor
   \/ CloseDoor
   \/ Tick
+  \/ SetPowerLow
+  \/ SetPowerMedium
+  \/ SetPowerHigh
+  \/ Pause
+  \/ Resume
+  \/ Fault_StuckDoor
+  \/ Recover_StuckDoor
 
 \* All valid system behaviors starting from the initial state
 Spec == Init /\ [][Next]_vars
