@@ -96,7 +96,8 @@ Next ==
 Spec == Init /\ [][Next]_vars
 
 \* Valid system behaviors with weak fairness to disallow stuttering
-FSpec == Spec /\ WF_vars(Tick)
+\* added additional fairness constraint to prevent permanent radiation
+FSpec == Spec /\ WF_vars(Tick) /\ WF_vars(Cancel)
 
 \* Safety check to detect radiation with door open
 DoorSafety == door = OPEN => radiation = OFF
