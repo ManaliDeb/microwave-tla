@@ -119,3 +119,13 @@ RunsUntilDoneOrInterrupted ==
 *)
 
 \* DoorSafety == RequireSafety => radiation = ON => door = CLOSED
+
+\* deadlock detection: ensures no action is indefinitely blocked
+DeadlockFree ==
+  \E act \in {Start, Tick, OpenDoor, CloseDoor, Cancel, SetPowerLow, SetPowerMedium, SetPowerHigh, Pause, Resume} :
+    [][act]_vars
+
+\* deadlock prevention: at least one action must be possible
+NoDeadlock == <>[] DeadlockFree
+
+
